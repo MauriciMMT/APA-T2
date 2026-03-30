@@ -1,28 +1,6 @@
 # Segunda tarea de APA 2026: Manejo de números primos
 
-> [!Caution]
->
-> El objetivo de esta tarea es manejar los tipos de datos y las estructuras de control de flujo de
-> Python. Existen bibliotecas que resuelven los apartados del enunciado de una manera más eficiente
-> y, sin duda, más sencilla, pero su uso está prohibido.
->
-> Además, se valorará también el uso de Markdown en la redacción del fichero README.md; en concreto,
-> la inclusión de código fuente con las herramientas propias de Markdown para su realce sintáctico, y
-> la inclusión de imágenes con las capturas de pantalla solicitadas. El fichero README.md deberá ser
-> visualizado correctamente desde la página principal del repositorio GitHub del alumno sin ninguna
-> intervención por parte del profesor.
->
-> Dispone del fichero MARKDOWN.md con información básica para el uso de Markdown, así como con enlaces
-> a la documentación oficial del mismo.
->
-> ¿Quiere saber más?, consulte con el profesorado.
-  
-## Nom i cognoms
-
-> [!Important]
-> Introduzca a continuación su nombre y apellidos:
->
-> Fulano Mengano Zutano
+# Maurici Mestres Teixidor
 
 ## Fichero `primos.py`
 
@@ -90,19 +68,189 @@ comprobarse las siguientes condiciones:
 
 #### Ejecución de los tests unitarios
 
-Inserte a continuación una captura de pantalla que muestre el resultado de ejecutar el fichero `primos.py` con la opción
-*verbosa*, de manera que se muestre el resultado de la ejecución de los tests unitarios.
+El resultado de ejecutar `python primos.py` con la opción `-v` (verbosa) es el siguiente:
+
+![Ejecución de los tests unitarios](img/Captura_de_pantalla_2026-03-30_155739.png)
 
 #### Código desarrollado
 
-Inserte a continuación el contenido del fichero `primos.py` usando los comandos necesarios para que se realice el
-realce sintáctico en Python del mismo.
+```python
+"""
+Manejo de números primos - Segunda tarea de APA 2026
 
-#### Subida del resultado al repositorio GitHub ¿y *pull-request*?
+Alumno: Fulano Mengano Zutano
 
-El fichero `primos.py`, la imagen con la ejecución de los tests unitarios y este mismo fichero, `README.md`, deberán
-subirse al repositorio GitHub mediante la orden `git push`. Si los profesores de la asignatura consiguen montar el
-sistema a tiempo, la entrega se formalizará realizando un *pull-request* al propietario del repositorio original.
+Tests unitarios de las funciones incluidas en este módulo:
 
-El fichero `README.md` deberá respetar las reglas de los ficheros Markdown y visualizarse correctamente en el repositorio,
-incluyendo la imagen con la ejecución de los tests unitarios y el realce sintáctico del código fuente insertado.
+>>> [ numero for numero in range(2, 50) if esPrimo(numero) ]
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+
+>>> primos(50)
+(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47)
+
+>>> descompon(36 * 175 * 143)
+(2, 2, 3, 3, 5, 5, 7, 11, 13)
+
+>>> mcm(90, 14)
+630
+
+>>> mcd(924, 780)
+12
+
+>>> mcm(42, 60, 70, 63)
+1260
+
+>>> mcd(840, 630, 1050, 1470)
+210
+"""
+
+
+def esPrimo(numero):
+    """
+    Determina si un número natural mayor que uno es primo.
+
+    Argumentos:
+        numero: número natural mayor que uno a evaluar.
+
+    Salida:
+        True si el número es primo, False en caso contrario.
+
+    Excepciones:
+        TypeError: si numero no es un número natural mayor que uno.
+
+    >>> esPrimo(2)
+    True
+    >>> esPrimo(4)
+    False
+    >>> esPrimo(17)
+    True
+    """
+    if not isinstance(numero, int) or numero < 2:
+        raise TypeError(f"El argumento debe ser un número natural mayor que uno, no {numero!r}")
+
+    for divisor in range(2, int(numero ** 0.5) + 1):
+        if numero % divisor == 0:
+            return False
+    return True
+
+
+def primos(numero):
+    """
+    Devuelve todos los números primos menores que el argumento.
+
+    Argumentos:
+        numero: límite superior (excluido) de la búsqueda de primos.
+
+    Salida:
+        Tupla con todos los números primos menores que numero.
+
+    >>> primos(10)
+    (2, 3, 5, 7)
+    >>> primos(2)
+    ()
+    """
+    return tuple(n for n in range(2, numero) if esPrimo(n))
+
+
+def descompon(numero):
+    """
+    Devuelve la descomposición en factores primos de un número.
+
+    Argumentos:
+        numero: número natural mayor que uno a descomponer.
+
+    Salida:
+        Tupla con los factores primos de numero en orden creciente (con repetición).
+
+    >>> descompon(12)
+    (2, 2, 3)
+    >>> descompon(7)
+    (7,)
+    """
+    factores = []
+    divisor = 2
+    while divisor * divisor <= numero:
+        while numero % divisor == 0:
+            factores.append(divisor)
+            numero //= divisor
+        divisor += 1
+    if numero > 1:
+        factores.append(numero)
+    return tuple(factores)
+
+
+def mcm(*numeros):
+    """
+    Devuelve el mínimo común múltiplo de sus argumentos.
+
+    Calcula el MCM a partir de la descomposición en factores primos de cada argumento,
+    tomando para cada factor primo la mayor potencia presente en cualquiera de ellos.
+
+    Argumentos:
+        *numeros: dos o más números naturales mayores que uno.
+
+    Salida:
+        Mínimo común múltiplo de todos los argumentos.
+
+    >>> mcm(4, 6)
+    12
+    >>> mcm(90, 14)
+    630
+    >>> mcm(42, 60, 70, 63)
+    1260
+    """
+    # Reunir las descomposiciones en factores primos de todos los argumentos
+    factores_por_numero = [descompon(n) for n in numeros]
+
+    # Obtener todos los factores primos presentes
+    todos_los_primos = set(f for factores in factores_por_numero for f in factores)
+
+    resultado = 1
+    for primo in todos_los_primos:
+        # Tomar la mayor potencia de este primo entre todos los números
+        max_potencia = max(factores.count(primo) for factores in factores_por_numero)
+        resultado *= primo ** max_potencia
+
+    return resultado
+
+
+def mcd(*numeros):
+    """
+    Devuelve el máximo común divisor de sus argumentos.
+
+    Calcula el MCD a partir de la descomposición en factores primos de cada argumento,
+    tomando para cada factor primo la menor potencia presente en todos ellos.
+
+    Argumentos:
+        *numeros: dos o más números naturales mayores que uno.
+
+    Salida:
+        Máximo común divisor de todos los argumentos.
+
+    >>> mcd(12, 8)
+    4
+    >>> mcd(924, 780)
+    12
+    >>> mcd(840, 630, 1050, 1470)
+    210
+    """
+    # Reunir las descomposiciones en factores primos de todos los argumentos
+    factores_por_numero = [descompon(n) for n in numeros]
+
+    # Solo interesan los factores presentes en TODOS los números
+    factores_comunes = set(factores_por_numero[0])
+    for factores in factores_por_numero[1:]:
+        factores_comunes &= set(factores)
+
+    resultado = 1
+    for primo in factores_comunes:
+        # Tomar la menor potencia de este primo entre todos los números
+        min_potencia = min(factores.count(primo) for factores in factores_por_numero)
+        resultado *= primo ** min_potencia
+
+    return resultado
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod(verbose=True)
